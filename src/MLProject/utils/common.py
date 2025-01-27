@@ -11,16 +11,50 @@ from typing import Any
 
 
 @ensure_annotations
-def read_yaml(Path: str) -> Any:
+def read_yaml(path_to_yaml: Path) ->  ConfigBox:
     """
-    Read yaml file
-    :param Path: str: Path of yaml file
-    :return: Any: Data from yaml file
+        reads yaml file and returns the data
+        Args:
+            path_to_yaml: path to yaml file
+        Returns
+            ConfigBox object
     """
-    with open(Path, "r") as file:
-        try:
-            data = yaml.safe_load(file)
-        except yaml.YAMLError as e:
-            logger.error(f"Error reading the yaml file : {e}")
-            raise BoxValueError(f"Error reading the yaml file : {e}")
-    return data
+
+    try:
+        with open(path_to_yaml) as yaml_file:
+            content = yaml.safe_load(yaml_file)
+            logger.info(f"reading the config file from {path_to_yaml}")
+            return ConfigBox(content)
+    except BoxValueError:
+        raise ValueError("Yaml File is empty")
+    except Exception as e:
+        raise e
+    
+
+@ensure_annotations
+def create_directories(path_to_directories: list, verbose=True):
+    """
+        creates list of directories
+    """
+    for path in path_to_directories:
+        os.makedirs(path, exist_ok=True)
+        if verbose:
+            logger.info(f"created directory at {path}")
+
+
+
+@ensure_annotations
+def get_size(path: Path) -> str:
+    """
+        returns the size of the object
+    """
+    size = round(os.path.getsize(path)/1024)
+    return f"~{size} KB"
+
+@ensure_annotations
+def save_json(path: Path,data: dict, verbose=True):
+    with open(path,'w') as f:
+        json.dump(data,f)
+
+    logger.info(f"json file saved at {path}")
+
